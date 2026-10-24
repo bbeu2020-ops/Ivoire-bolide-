@@ -1,0 +1,29 @@
+content:
+  - name: voitures
+    label: Voitures
+    type: collection
+    path: voitures
+    format: json
+    filename: "{primary}.json"
+    fields:
+      - name: marque
+        label: Marque
+        type: string
+      - name: modele
+        label: Modèle
+        type: string
+      - name: prix
+        label: Prix
+        type: string
+      - name: annee
+        label: Année
+        type: string
+      - name: description
+        label: Description
+        type: text
+      - name: photo
+        label: Photo
+        type: image
+media:
+  input: images
+  output: /images

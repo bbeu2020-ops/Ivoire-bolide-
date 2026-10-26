@@ -109,7 +109,7 @@
         <h3>Hyundai Tucson</h3>
         <div class="year">Modèle 2020</div>
       </div>
-      <div class="price">À négocier</div>
+      <div class="price">123</div>
     </div>
     <p class="car-desc">Hyundai Tucson 2020. Contactez IVOIRE BOLIDE pour obtenir plus d’informations sur ce véhicule.</p>
     <div class="specs"><span>SUV</span><span>Confort</span><span>Famille</span></div>
@@ -249,7 +249,8 @@ async function chargerVoitureHyundai() {
         /^/images//,
         "./images/"
       );
-      photo.alt = ${voiture.marque.trim()} ${voiture.modele};
+      photo.alt =
+        ${voiture.marque.trim()} ${voiture.modele};
     }
 
   } catch (erreur) {

@@ -188,32 +188,70 @@
       el.target = "_blank"; el.rel = "noopener";
     });
     const search = document.getElementById("search");
-    const brand = document.getElementById("brandFilter");
-    const type = document.getElementById("typeFilter");
-    function filterCars() {
+const brand = document.getElementById("brandFilter");
+const type = document.getElementById("typeFilter");
+
+function filterCars() {
   const cars = [...document.querySelectorAll(".car-card")];
 
-  // Garde ici le reste de ton code existant
+  const term = (search?.value || "").toLowerCase().trim();
+  const selectedBrand = brand?.value || "";
+  const selectedType = type?.value || "";
+
+  let count = 0;
+
+  cars.forEach(card => {
+    const name = (
+      card.dataset.name ||
+      card.querySelector("h3")?.textContent ||
+      ""
+    ).toLowerCase();
+
+    const cardBrand = (
+      card.dataset.brand ||
+      ""
+    ).toLowerCase();
+
+    const cardType = (
+      card.dataset.type ||
+      ""
+    ).toLowerCase();
+
+    const matchName = name.includes(term);
+    const matchBrand =
+      !selectedBrand ||
+      cardBrand === selectedBrand.toLowerCase();
+
+    const matchType =
+      !selectedType ||
+      cardType === selectedType.toLowerCase();
+
+    const visible = matchName && matchBrand && matchType;
+
+    card.style.display = visible ? "" : "none";
+
+    if (visible) count++;
+  });
+
+  const counter = document.getElementById("resultCount");
+
+  if (counter) {
+    counter.textContent =
+      ${count} véhicule${count > 1 ? "s" : ""} trouvé${count > 1 ? "s" : ""};
+  }
 }
-      const term = search.value.toLowerCase().trim();
-      let count = 0;
-      cars.forEach(card => {
-        const match = card.dataset.name.toLowerCase().includes(term) &&
-          (!brand.value || card.dataset.brand === brand.value) &&
-          (!type.value || card.dataset.type === type.value);
-        card.style.display = match ? "" : "none";
-        if (match) count++;
-      });
-      let empty = document.querySelector(".empty");
-      if (!count && !empty) {
-        empty = document.createElement("div"); empty.className = "empty";
-        empty.textContent = "Aucun véhicule ne correspond à votre recherche. Essayez un autre filtre.";
-        document.getElementById("cars").appendChild(empty);
-      } else if (count && empty) empty.remove();
-    }
-    search.addEventListener("input", filterCars);
-    brand.addEventListener("change", filterCars);
-    type.addEventListener("change", filterCars);
+
+if (search) {
+  search.addEventListener("input", filterCars);
+}
+
+if (brand) {
+  brand.addEventListener("change", filterCars);
+}
+
+if (type) {
+  type.addEventListener("change", filterCars);
+}
     document.getElementById("resetFilters").addEventListener("click", () => {
       search.value = ""; brand.value = ""; type.value = ""; filterCars();
     });

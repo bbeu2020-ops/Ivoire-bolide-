@@ -237,7 +237,7 @@ function filterCars() {
 
   if (counter) {
     counter.textContent =
-      ${count} véhicule${count > 1 ? "s" : ""} trouvé${count > 1 ? "s" : ""};
+  `${count} véhicule${count > 1 ? "s" : ""} trouvé${count > 1 ? "s" : ""}`;
   }
 }
 
@@ -330,20 +330,35 @@ async function chargerToutesLesVoitures() {
           carte.dataset.type = "SUV";
 
           carte.innerHTML = `
-            <div class="car-image">
-              <img loading="lazy" alt="">
-              <span class="year"></span>
-            </div>
-            <div class="car-info">
-              <h3></h3>
-              <p class="car-desc"></p>
-              <div class="car-bottom">
-                <span class="price"></span>
-                <a class="wa-link" target="_blank"
-                   rel="noopener noreferrer">WhatsApp</a>
-              </div>
-            </div>
-          `;
+  <div class="car-image">
+    <img loading="lazy" alt="">
+    <span class="badge">DISPONIBLE</span>
+  </div>
+  <div class="car-body">
+    <div class="car-top">
+      <div>
+        <h3></h3>
+        <div class="year"></div>
+      </div>
+      <div class="price"></div>
+    </div>
+    <p class="car-desc"></p>
+    <div class="specs">
+      <span>Automobile</span>
+      <span>IVOIRE BOLIDE</span>
+    </div>
+    <div class="car-actions">
+      <a class="btn btn-whatsapp wa-link"
+         data-car=""
+         href="#">
+        WhatsApp ↗
+      </a>
+      <a class="btn btn-ghost" href="#contact">
+        Détails
+      </a>
+    </div>
+  </div>
+`;
 
           catalogue.appendChild(carte);
         }

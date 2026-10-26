@@ -1,6 +1,6 @@
 content:
-  - name: voitures
-    label: Voitures
+  - name: voiture
+    label: Voiture
     type: collection
     path: voitures
     format: json

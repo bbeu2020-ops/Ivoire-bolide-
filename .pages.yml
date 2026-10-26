@@ -2,7 +2,7 @@ content:
   - name: voiture
     label: Voiture
     type: collection
-    path: voitures
+    path: voiture
     format: json
     filename: "{primary}.json"
     fields:

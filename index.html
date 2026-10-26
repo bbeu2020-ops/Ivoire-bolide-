@@ -217,6 +217,47 @@
     document.getElementById("menuToggle").addEventListener("click", () => document.getElementById("navlinks").classList.toggle("open"));
     document.querySelectorAll("#navlinks a").forEach(a => a.addEventListener("click", () => document.getElementById("navlinks").classList.remove("open")));
     document.getElementById("year").textContent = new Date().getFullYear();
+async function chargerVoitureHyundai() {
+  try {
+    const reponse = await fetch("./voitures/hyundai.json");
+    if (!reponse.ok) throw new Error("Fichier introuvable");
+
+    const voiture = await reponse.json();
+
+    const carte = document.querySelector(
+      '.car-card[data-name="Hyundai Tucson 2020"]'
+    );
+
+    if (!carte) return;
+
+    carte.querySelector("h3").textContent =
+      ${voiture.marque.trim()} ${voiture.modele};
+
+    carte.querySelector(".year").textContent =
+      "Modèle " + voiture.annee;
+
+    carte.querySelector(".price").textContent =
+      voiture.prix.trim();
+
+    carte.querySelector(".car-desc").textContent =
+      voiture.description.trim();
+
+    const photo = carte.querySelector(".car-image img");
+
+    if (photo && voiture.photo) {
+      photo.src = voiture.photo.replace(
+        /^/images//,
+        "./images/"
+      );
+      photo.alt = ${voiture.marque.trim()} ${voiture.modele};
+    }
+
+  } catch (erreur) {
+    console.error("Impossible de charger la Hyundai :", erreur);
+  }
+}
+
+chargerVoitureHyundai();
   </script>
 </body>
 </html>

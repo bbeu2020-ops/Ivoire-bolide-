@@ -217,48 +217,165 @@
     document.getElementById("menuToggle").addEventListener("click", () => document.getElementById("navlinks").classList.toggle("open"));
     document.querySelectorAll("#navlinks a").forEach(a => a.addEventListener("click", () => document.getElementById("navlinks").classList.remove("open")));
     document.getElementById("year").textContent = new Date().getFullYear();
-async function chargerVoitureHyundai() {
+async function chargerToutesLesVoitures() {
+  const dossier =
+    "https://api.github.com/repos/bbeu2020-ops/Ivoire-bolide-/contents/voitures";
+
   try {
-    const reponse = await fetch("./voitures/hyundai.json");
-    if (!reponse.ok) throw new Error("Fichier introuvable");
+    const reponse = await fetch(dossier);
 
-    const voiture = await reponse.json();
-
-    const carte = document.querySelector(
-      '.car-card[data-name="Hyundai Tucson 2020"]'
-    );
-
-    if (!carte) return;
-
-    carte.querySelector("h3").textContent =
-      ${voiture.marque.trim()} ${voiture.modele};
-
-    carte.querySelector(".year").textContent =
-      "Modèle " + voiture.annee;
-
-    carte.querySelector(".price").textContent =
-      voiture.prix.trim();
-
-    carte.querySelector(".car-desc").textContent =
-      voiture.description.trim();
-
-    const photo = carte.querySelector(".car-image img");
-
-    if (photo && voiture.photo) {
-      photo.src = voiture.photo.replace(
-        /^/images//,
-        "./images/"
-      );
-      photo.alt =
-        ${voiture.marque.trim()} ${voiture.modele};
+    if (!reponse.ok) {
+      throw new Error("Impossible de lire le catalogue");
     }
 
+    const fichiers = await reponse.json();
+
+    const fichiersJSON = fichiers.filter(
+      fichier =>
+        fichier.type === "file" &&
+        fichier.name.toLowerCase().endsWith(".json")
+    );
+
+    const catalogue = document.querySelector(".cars#cars");
+
+    if (!catalogue) {
+      throw new Error("Catalogue HTML introuvable");
+    }
+
+    for (const fichier of fichiersJSON) {
+      try {
+        const resultat = await fetch(fichier.download_url);
+
+        if (!resultat.ok) continue;
+
+        const voiture = await resultat.json();
+
+        const marque = String(voiture.marque || "").trim();
+        const modele = String(voiture.modele || "").trim();
+        const annee = String(voiture.annee || "").trim();
+        const prix = String(voiture.prix || "").trim();
+        const description =
+          String(voiture.description || "").trim();
+
+        if (!marque || !modele) continue;
+
+        const nom = `${marque} ${modele} ${annee}`.trim();
+
+        const cartes = [
+          ...catalogue.querySelectorAll(".car-card")
+        ];
+
+        const carteExistante = cartes.find(carte => {
+          const titre = carte.querySelector("h3");
+          const anneeElement = carte.querySelector(".year");
+
+          const nomExistant = [
+            titre?.textContent || "",
+            (anneeElement?.textContent || "")
+              .replace(/^Modèle\s*/i, "")
+          ].join(" ").toLowerCase().replace(/\s+/g, " ").trim();
+
+          return nomExistant === nom.toLowerCase()
+            .replace(/\s+/g, " ").trim();
+        });
+
+        let carte = carteExistante;
+
+        if (!carte) {
+          carte = document.createElement("article");
+          carte.className = "car-card";
+          carte.dataset.name = nom;
+          carte.dataset.brand = marque;
+          carte.dataset.type = "SUV";
+
+          carte.innerHTML = `
+            <div class="car-image">
+              <img loading="lazy" alt="">
+              <span class="year"></span>
+            </div>
+            <div class="car-info">
+              <h3></h3>
+              <p class="car-desc"></p>
+              <div class="car-bottom">
+                <span class="price"></span>
+                <a class="wa-link" target="_blank"
+                   rel="noopener noreferrer">WhatsApp</a>
+              </div>
+            </div>
+          `;
+
+          catalogue.appendChild(carte);
+        }
+
+        carte.dataset.name = nom;
+        carte.dataset.brand = marque;
+
+        carte.querySelector("h3").textContent =
+          `${marque} ${modele}`;
+
+        carte.querySelector(".year").textContent =
+          annee ? `Modèle ${annee}` : "";
+
+        carte.querySelector(".price").textContent =
+          prix || "Prix sur demande";
+
+        const descriptionElement =
+          carte.querySelector(".car-desc");
+
+        if (descriptionElement) {
+          descriptionElement.textContent = description;
+        }
+
+        const photo = carte.querySelector(".car-image img");
+
+        if (photo && voiture.photo) {
+          const chemin = String(voiture.photo).trim();
+
+          photo.src = /^https?:\/\//i.test(chemin)
+            ? chemin
+            : new URL(
+                chemin.replace(/^\/+/, ""),
+                window.location.href
+              ).href;
+
+          photo.alt = nom;
+        }
+
+        const bouton = carte.querySelector(".wa-link");
+
+        if (bouton) {
+          const message = encodeURIComponent(
+            `Bonjour IVOIRE BOLIDE, je suis intéressé par la ${nom}.`
+          );
+
+          bouton.href =
+            `https://wa.me/2250506418126?text=${message}`;
+        }
+
+      } catch (erreurVoiture) {
+        console.error(
+          "Erreur sur la voiture " + fichier.name,
+          erreurVoiture
+        );
+      }
+    }
+
+    // Actualiser les filtres après le chargement
+    if (typeof filterCars === "function") {
+      filterCars();
+    }
+
+    console.log("Catalogue IVOIRE BOLIDE chargé !");
+
   } catch (erreur) {
-    console.error("Impossible de charger la Hyundai :", erreur);
+    console.error(
+      "Erreur de chargement du catalogue :",
+      erreur
+    );
   }
 }
 
-chargerVoitureHyundai();
+chargerToutesLesVoitures();
   </script>
 </body>
 </html>

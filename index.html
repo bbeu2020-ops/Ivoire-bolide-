@@ -163,22 +163,39 @@
 
   <footer><div class="wrap footer-inner"><div>© <span id="year"></span> IVOIRE BOLIDE. Tous droits réservés.</div><div>Votre prestige, notre priorité. · Abidjan, Côte d'Ivoire</div></div></footer>
 
-    const WHATSAPP_NUMBER = "2250506418126";
+    <script>
+const WHATSAPP_NUMBER = "2250506418126";
 
-    function whatsappUrl(message) {
-      return "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
-    }
-    document.querySelectorAll(".wa-link").forEach(link => {
-      const car = link.dataset.car || "un véhicule";
-      link.href = whatsappUrl("Bonjour IVOIRE BOLIDE, je souhaite avoir des informations sur : " + car + ". Est-il disponible et quel est son prix ?");
-      link.target = "_blank"; link.rel = "noopener";
-    });
-    ["mainWhatsApp","contactWhatsApp"].forEach(id => {
-      const el = document.getElementById(id);
-      el.href = whatsappUrl("Bonjour IVOIRE BOLIDE, je souhaite être accompagné dans ma recherche de véhicule.");
-      el.target = "_blank"; el.rel = "noopener";
-    });
-    const search = document.getElementById("search");
+function whatsappUrl(message) {
+  return "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
+}
+
+// WhatsApp des véhicules
+function configurerWhatsApp() {
+  document.querySelectorAll(".wa-link").forEach(link => {
+    const car = link.dataset.car || "un véhicule";
+    link.href = whatsappUrl(
+      "Bonjour IVOIRE BOLIDE, je souhaite avoir des informations sur : " +
+      car + ". Est-il disponible et quel est son prix ?"
+    );
+    link.target = "_blank";
+    link.rel = "noopener";
+  });
+
+  ["mainWhatsApp", "contactWhatsApp"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.href = whatsappUrl(
+      "Bonjour IVOIRE BOLIDE, je souhaite être accompagné dans ma recherche de véhicule."
+    );
+    el.target = "_blank";
+    el.rel = "noopener";
+  });
+}
+
+// Recherche et filtres
+const search = document.getElementById("search");
 const brand = document.getElementById("brandFilter");
 const type = document.getElementById("typeFilter");
 
@@ -198,23 +215,14 @@ function filterCars() {
       ""
     ).toLowerCase();
 
-    const cardBrand = (
-      card.dataset.brand ||
-      ""
-    ).toLowerCase();
-
-    const cardType = (
-      card.dataset.type ||
-      ""
-    ).toLowerCase();
+    const cardBrand = (card.dataset.brand || "").toLowerCase();
+    const cardType = (card.dataset.type || "").toLowerCase();
 
     const matchName = name.includes(term);
-    const matchBrand =
-      !selectedBrand ||
+    const matchBrand = !selectedBrand ||
       cardBrand === selectedBrand.toLowerCase();
 
-    const matchType =
-      !selectedType ||
+    const matchType = !selectedType ||
       cardType === selectedType.toLowerCase();
 
     const visible = matchName && matchBrand && matchType;
@@ -228,27 +236,39 @@ function filterCars() {
 
   if (counter) {
     counter.textContent =
-  `${count} véhicule${count > 1 ? "s" : ""} trouvé${count > 1 ? "s" : ""}`;
+      `${count} véhicule${count > 1 ? "s" : ""} trouvé${count > 1 ? "s" : ""}`;
   }
 }
 
-if (search) {
-  search.addEventListener("input", filterCars);
+search?.addEventListener("input", filterCars);
+brand?.addEventListener("change", filterCars);
+type?.addEventListener("change", filterCars);
+
+document.getElementById("resetFilters")?.addEventListener("click", () => {
+  if (search) search.value = "";
+  if (brand) brand.value = "";
+  if (type) type.value = "";
+  filterCars();
+});
+
+// Menu mobile
+document.getElementById("menuToggle")?.addEventListener("click", () => {
+  document.getElementById("navlinks")?.classList.toggle("open");
+});
+
+document.querySelectorAll("#navlinks a").forEach(a => {
+  a.addEventListener("click", () => {
+    document.getElementById("navlinks")?.classList.remove("open");
+  });
+});
+
+// Année automatique
+const yearElement = document.getElementById("year");
+if (yearElement) {
+  yearElement.textContent = new Date().getFullYear();
 }
 
-if (brand) {
-  brand.addEventListener("change", filterCars);
-}
-
-if (type) {
-  type.addEventListener("change", filterCars);
-}
-    document.getElementById("resetFilters").addEventListener("click", () => {
-      search.value = ""; brand.value = ""; type.value = ""; filterCars();
-    });
-    document.getElementById("menuToggle").addEventListener("click", () => document.getElementById("navlinks").classList.toggle("open"));
-    document.querySelectorAll("#navlinks a").forEach(a => a.addEventListener("click", () => document.getElementById("navlinks").classList.remove("open")));
-    document.getElementById("year").textContent = new Date().getFullYear();
+// Chargement automatique du catalogue GitHub
 async function chargerToutesLesVoitures() {
   const dossier =
     "https://api.github.com/repos/bbeu2020-ops/Ivoire-bolide-/contents/voitures";
@@ -262,10 +282,9 @@ async function chargerToutesLesVoitures() {
 
     const fichiers = await reponse.json();
 
-    const fichiersJSON = fichiers.filter(
-      fichier =>
-        fichier.type === "file" &&
-        fichier.name.toLowerCase().endsWith(".json")
+    const fichiersJSON = fichiers.filter(fichier =>
+      fichier.type === "file" &&
+      fichier.name.toLowerCase().endsWith(".json")
     );
 
     const catalogue = document.querySelector(".cars#cars");
@@ -286,143 +305,120 @@ async function chargerToutesLesVoitures() {
         const modele = String(voiture.modele || "").trim();
         const annee = String(voiture.annee || "").trim();
         const prix = String(voiture.prix || "").trim();
-        const description =
-          String(voiture.description || "").trim();
+        const description = String(voiture.description || "").trim();
+        const photo = String(voiture.photo || "").trim();
 
         if (!marque || !modele) continue;
 
-        const nom = `${marque} ${modele} ${annee}`.trim();
+        const nom = `${marque} ${modele}`.trim();
 
-        const cartes = [
-          ...catalogue.querySelectorAll(".car-card")
-        ];
+        const cartes = [...catalogue.querySelectorAll(".car-card")];
 
-        const carteExistante = cartes.find(carte => {
-          const titre = carte.querySelector("h3");
-          const anneeElement = carte.querySelector(".year");
+        // Recherche d'une carte déjà présente
+        let carte = cartes.find(c => {
+          const titre = c.querySelector("h3")?.textContent || "";
+          const nomCarte = (
+            c.dataset.name || titre
+          ).toLowerCase().replace(/\s+/g, " ").trim();
 
-          const nomExistant = [
-            titre?.textContent || "",
-            (anneeElement?.textContent || "")
-              .replace(/^Modèle\s*/i, "")
-          ].join(" ").toLowerCase().replace(/\s+/g, " ").trim();
-
-          return nomExistant === nom.toLowerCase()
+          const nomRecherche = nom.toLowerCase()
             .replace(/\s+/g, " ").trim();
+
+          return nomCarte === nomRecherche ||
+            titre.toLowerCase().trim() === nomRecherche;
         });
 
-        let carte = carteExistante;
-
+        // Création d'une nouvelle carte si nécessaire
         if (!carte) {
           carte = document.createElement("article");
           carte.className = "car-card";
-          carte.dataset.name = nom;
-          carte.dataset.brand = marque;
-          carte.dataset.type = "SUV";
 
           carte.innerHTML = `
-  <div class="car-image">
-    <img loading="lazy" alt="">
-    <span class="badge">DISPONIBLE</span>
-  </div>
-  <div class="car-body">
-    <div class="car-top">
-      <div>
-        <h3></h3>
-        <div class="year"></div>
-      </div>
-      <div class="price"></div>
-    </div>
-    <p class="car-desc"></p>
-    <div class="specs">
-      <span>Automobile</span>
-      <span>IVOIRE BOLIDE</span>
-    </div>
-    <div class="car-actions">
-      <a class="btn btn-whatsapp wa-link"
-         data-car=""
-         href="#">
-        WhatsApp ↗
-      </a>
-      <a class="btn btn-ghost" href="#contact">
-        Détails
-      </a>
-    </div>
-  </div>
-`;
+            <div class="car-image">
+              <img src="" alt="" loading="lazy">
+              <span class="badge hot">DISPONIBLE</span>
+            </div>
+
+            <div class="car-body">
+              <div class="car-top">
+                <h3></h3>
+                <div class="year"></div>
+              </div>
+
+              <div class="price"></div>
+              <p class="car-desc"></p>
+
+              <div class="specs"></div>
+
+              <a class="btn btn-acheter cette voiture wa-link"
+                 href="#" data-car="">
+                 Contacter sur WhatsApp
+              </a>
+            </div>
+          `;
 
           catalogue.appendChild(carte);
         }
 
+        // Mise à jour des informations
         carte.dataset.name = nom;
         carte.dataset.brand = marque;
 
-        carte.querySelector("h3").textContent =
-          `${marque} ${modele}`;
+        const titre = carte.querySelector("h3");
+        if (titre) titre.textContent = nom;
 
-        carte.querySelector(".year").textContent =
-          annee ? `Modèle ${annee}` : "";
+        const anneeElement = carte.querySelector(".year");
+        if (anneeElement) {
+          anneeElement.textContent =
+            annee && annee !== "À confirmer"
+              ? "Modèle " + annee
+              : "Année à confirmer";
+        }
 
-        carte.querySelector(".price").textContent =
-          prix || "Prix sur demande";
+        const prixElement = carte.querySelector(".price");
+        if (prixElement) {
+          prixElement.textContent = prix || "Prix à négocier";
+        }
 
-        const descriptionElement =
-          carte.querySelector(".car-desc");
-
+        const descriptionElement = carte.querySelector(".car-desc");
         if (descriptionElement) {
           descriptionElement.textContent = description;
         }
 
-        const photo = carte.querySelector(".car-image img");
-
-        if (photo && voiture.photo) {
-          const chemin = String(voiture.photo).trim();
-
-          photo.src = /^https?:\/\//i.test(chemin)
-            ? chemin
-            : new URL(
-                chemin.replace(/^\/+/, ""),
-                window.location.href
-              ).href;
-
-          photo.alt = nom;
+        const image = carte.querySelector(".car-image img");
+        if (image && photo) {
+          image.src = photo;
+          image.alt = nom;
         }
 
+        // Lien WhatsApp
         const bouton = carte.querySelector(".wa-link");
-
         if (bouton) {
-          const message = encodeURIComponent(
-            `Bonjour IVOIRE BOLIDE, je suis intéressé par la ${nom}.`
+          bouton.dataset.car = nom;
+          bouton.href = whatsappUrl(
+            "Bonjour IVOIRE BOLIDE, je souhaite avoir des informations sur : " +
+            nom + ". Est-il disponible et quel est son prix ?"
           );
-
-          bouton.href =
-            `https://wa.me/2250506418126?text=${message}`;
+          bouton.target = "_blank";
+          bouton.rel = "noopener";
         }
 
       } catch (erreurVoiture) {
-        console.error(
-          "Erreur sur la voiture " + fichier.name,
-          erreurVoiture
-        );
+        console.error("Erreur sur une voiture :", fichier.name, erreurVoiture);
       }
     }
 
-    // Actualiser les filtres après le chargement
-    if (typeof filterCars === "function") {
-      filterCars();
-    }
-
-    console.log("Catalogue IVOIRE BOLIDE chargé !");
+    configurerWhatsApp();
+    filterCars();
 
   } catch (erreur) {
-    console.error(
-      "Erreur de chargement du catalogue :",
-      erreur
-    );
+    console.error("Erreur de chargement du catalogue :", erreur);
   }
 }
 
+configurerWhatsApp();
 chargerToutesLesVoitures();
+</script>
   </script>
 </body>
 </html>

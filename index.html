@@ -386,10 +386,15 @@ async function chargerToutesLesVoitures() {
         }
 
         const image = carte.querySelector(".car-image img");
-        if (image && photo) {
-          image.src = photo;
-          image.alt = nom;
-        }
+
+if (image && photo) {
+  const cheminPhoto = photo.startsWith("http")
+    ? photo
+    : "./" + photo.replace(/^\/+/, "");
+
+  image.src = cheminPhoto;
+  image.alt = nom;
+}
 
         // Lien WhatsApp
         const bouton = carte.querySelector(".wa-link");
